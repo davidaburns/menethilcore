@@ -9,7 +9,7 @@ const (
 )
 
 var (
-	name        = "osmom"
+	name        = "menethilcore-auth"
 	version     = "0.0.1"
 	buildNumber = "0"
 	buildType   = BuildTypeUnkown

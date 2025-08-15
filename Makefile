@@ -1,8 +1,11 @@
+APP_NAME := menethilcore-auth
 APP_IMPORT := github.com/davidaburns/menethilcore
 BUILD_VERSION := $(shell git describe --tags --abbrev=0)
 BUILD_NUMBER := $(shell git rev-list --count HEAD)
 BUILD_COMMIT := $(shell git rev-parse --short HEAD)
 BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+DOCKER_REGISTRY := docker.io
+DOCKER_IMAGE := $(APP_NAME)
 
 # Colors for terminal output
 GREEN := \033[0;32m
@@ -21,14 +24,14 @@ help: ## Show this help message
 build: ## Build Docker image
 	@echo "$(YELLOW)Building Docker image...$(NC)"
 	docker build \
-		--build-arg BUILD_IMPORT=menethilcore-auth \
-		--build-arg BUILD_NAME=menethilcore-auth \
+		--build-arg BUILD_IMPORT=$(APP_IMPORT) \
+		--build-arg BUILD_NAME=$(APP_NAME) \
 		--build-arg BUILD_VERSION=$(BUILD_VERSION) \
 		--build-arg BUILD_NUMBER=$(BUILD_NUMBER) \
 		--build-arg BUILD_COMMIT=$(BUILD_COMMIT) \
 		--build-arg BUILD_TIME=$(BUILD_TIME) \
-		-t menethilcore-auth:$(BUILD_VERSION) \
-		-t menethilcore-auth:latest \
+		-t $(DOCKER_IMAGE):$(BUILD_VERSION) \
+		-t $(DOCKER_IMAGE):latest \
 		.
 	@echo "$(GREEN)Build complete!$(NC)"
 
@@ -36,20 +39,21 @@ build: ## Build Docker image
 run: ## Run Docker container locally
 	make build && \
 	docker run --rm \
-		-p 8080:8080 \
-		--name menethilcore-auth \
-		menethilcore-auth:$(BUILD_VERSION)
+		-p 3724:3724 \
+		-p 8085:8085 \
+		--name $(APP_NAME) \
+		$(DOCKER_IMAGE):$(BUILD_VERSION)
 
 .PHONY: clean
 clean: ## Remove Docker images
-	docker rmi -f menethilcore-auth:$(BUILD_VERSION) $(DOCKER_IMAGE):latest 2>/dev/null || true
+	docker rmi -f $(DOCKER_IMAGE):$(BUILD_VERSION) $(DOCKER_IMAGE):latest 2>/dev/null || true
 
 .PHONY: fmt
 fmt:   ## Format files via Golangs formatter
 	go fmt ./...
 
 .PHONY: tidy
-tidy:   ## Tidy up the source directory via Golang tidy functionality
+tidy:  ## Tidy up the module
 	go mod tidy
 
 .PHONY: test
